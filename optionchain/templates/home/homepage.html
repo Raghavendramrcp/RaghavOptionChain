@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %} <title> Home Page </title> {% endblock title %}
+
+
+{% block content %}
+
+{% if user.is_authenticated %}
+
+<div class="row container py-4">
+    <div class="row ">
+        <div class="col-6 py-4">
+            <div class="card">
+                <div class="card-header">
+                    Generate Access Token
+                </div>
+                <div class="card-body">
+                    <h4 class="card-title"> Click here to generate access token for today </h4>
+                </div>
+                <div class="card-footer text-muted">
+                    <a href="{% url 'access_token' user.id %}" class="btn btn-primary"> Generate </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 py-4">
+            <div class="card">
+                <div class="card-header">
+                    Update the Ticker Symbols
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title"> Upload or Update Symbols every week</h5>
+                </div>
+                <div class="card-footer text-muted">
+                    <a href="{% url 'symbol_update' %}" class="btn btn-primary"> Go </a>
+                </div>
+            </div>
+        </div>
+    </div>
+     <div class="row ">
+        <div class="col-6 py-4">
+            <div class="card">
+                <div class="card-header">
+                    Option Chain
+                </div>
+                <div class="card-body">
+                    <h4 class="card-title"> Click here to generate access Option Chain </h4>
+                </div>
+                <div class="card-footer text-muted">
+                    <a href="{% url 'optionchain_hp' user.id %}" class="btn btn-primary"> View </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% else %}
+
+You need to Login
+
+{% endif %}
+
+
+
+
+{% endblock content %}

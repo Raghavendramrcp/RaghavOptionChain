@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Option Chain Homepage{% endblock title %}
+
+{% block content %}
+
+<h1>Option Chain Data</h1>
+<p>Next Week Expiry: {{ next_week_expiry }}</p>
+
+Cummulative Call = {{ call_change_in_oi_sum }}
+<br>
+Cummulative Puts = {{ put_change_in_oi_sum }}
+<br>
+
+
+<h1>PE Ratio = {{ PE_Ratio }} </h1>
+
+
+<table>
+  <thead>
+    <tr>
+      <th>Strike Price</th>
+      <th>Expiry Date</th>
+      <th>Open Interest</th>
+      <th>Change in Open Interest</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for data in option_chain_data %}
+      <tr>
+        <td>{{ data.strikePrice }}</td>
+        <td>{{ data.expiryDate }}</td>
+        <td>{{ data.openInterest }}</td>
+        <td>{{ data.changeInOpenInterest }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock content %}
