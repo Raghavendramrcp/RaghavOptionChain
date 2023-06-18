@@ -8,6 +8,7 @@ from datetime import datetime
 from home.models import Fyers_Access_Token, Fyers_Auth_Inputs, MCXSymbol, EquitySymbol
 from home.fyersapi import FyerApiClass
 
+from .models import Save_PE_Ratio
 
 from datetime import datetime, timedelta
 
@@ -65,7 +66,8 @@ def option_chain_view(request, pk):
             option_chain_data = json_data["records"]["data"]
 
             # Create empty lists for storing extracted data
-            extracted_data = []
+            ce_data = []
+            pe_data = []
 
             # Get the current date
             current_date = datetime.now().date()
@@ -88,7 +90,7 @@ def option_chain_view(request, pk):
                         if strike_price % 100 == 0 and strike_price >= quote_value - 1000 and strike_price <= quote_value + 1000:
                             open_interest = data["CE"]["openInterest"]
                             change_in_open_interest = data["CE"]["changeinOpenInterest"]
-                            extracted_data.append({
+                            ce_data.append({
                                 "optionType": "CE",
                                 "strikePrice": strike_price,
                                 "expiryDate": data["expiryDate"],
@@ -101,7 +103,7 @@ def option_chain_view(request, pk):
                         if strike_price % 100 == 0 and strike_price >= quote_value - 1000 and strike_price <= quote_value + 1000:
                             open_interest = data["PE"]["openInterest"]
                             change_in_open_interest = data["PE"]["changeinOpenInterest"]
-                            extracted_data.append({
+                            pe_data.append({
                                 "optionType": "PE",
                                 "strikePrice": strike_price,
                                 "expiryDate": data["expiryDate"],
@@ -111,18 +113,32 @@ def option_chain_view(request, pk):
                             put_change_in_oi_sum += change_in_open_interest
 
             # Sort the extracted data by strike price
-            extracted_data.sort(key=lambda x: x["strikePrice"])
+            ce_data.sort(key=lambda x: x["strikePrice"])
+            pe_data.sort(key=lambda x: x["strikePrice"])
 
-            put_call_ratio = round(float(put_change_in_oi_sum)/float(call_change_in_oi_sum),2)
+            put_call_ratio = round(float(put_change_in_oi_sum) / float(call_change_in_oi_sum), 2)
 
+            if put_call_ratio > 1.25:
+                recommendation = "BUY"
+            elif put_call_ratio < 0.75:
+                recommendation = "SELL"
+            else:
+                recommendation = "Market Sideways"
+
+            save_pe_value = Save_PE_Ratio(value=put_call_ratio)
+            save_pe_value.save()
 
             # Create the context dictionary
             context = {
-                "option_chain_data": extracted_data,
+                "ce_option_chain_data": ce_data,
+                "pe_option_chain_data": pe_data,
                 "next_week_expiry": next_week_expiry.strftime("%d-%b-%Y"),
                 "call_change_in_oi_sum": call_change_in_oi_sum,
                 "put_change_in_oi_sum": put_change_in_oi_sum,
                 "PE_Ratio": put_call_ratio,
+                "save_pe_value": save_pe_value,
+                "bnf_value": quote_value,
+                "recommendation": recommendation,
             }
 
             # Render the template with the context

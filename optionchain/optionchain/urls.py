@@ -24,4 +24,5 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path('', include('home.urls')),
     path('option_chain/', include('optionchainapp.urls')),
+    path('nifty_option_chain/', include('optionchainnifty.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

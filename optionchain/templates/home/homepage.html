@@ -40,13 +40,26 @@
         <div class="col-6 py-4">
             <div class="card">
                 <div class="card-header">
-                    Option Chain
+                    Bank Nifty Option Chain
                 </div>
                 <div class="card-body">
-                    <h4 class="card-title"> Click here to generate access Option Chain </h4>
+                    <h4 class="card-title"> Click here to generate access Bank Nifty Option Chain </h4>
                 </div>
                 <div class="card-footer text-muted">
                     <a href="{% url 'optionchain_hp' user.id %}" class="btn btn-primary"> View </a>
+                </div>
+            </div>
+        </div>
+         <div class="col-6 py-4">
+            <div class="card">
+                <div class="card-header">
+                    Nifty Option Chain
+                </div>
+                <div class="card-body">
+                    <h4 class="card-title"> Click here to generate access Nifty Option Chain </h4>
+                </div>
+                <div class="card-footer text-muted">
+                    <a href="{% url 'nifty_optionchain_hp' user.id %}" class="btn btn-primary"> View </a>
                 </div>
             </div>
         </div>
