@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Option Chain Homepage{% endblock title %}
+
+{% block content %}
+<div class="container">
+  <script>
+<!--    function refreshPage() {-->
+<!--      location.reload();-->
+<!--    }-->
+
+<!--    var currentTime = new Date();-->
+<!--    var startHour = 9;-->
+<!--    var endHour = 16;-->
+
+<!--    function checkRefreshTime() {-->
+<!--      currentTime = new Date();-->
+<!--      if (currentTime.getHours() >= startHour && currentTime.getHours() < endHour) {-->
+<!--        refreshPage();-->
+<!--      }-->
+<!--    }-->
+
+<!--    // Call the checkRefreshTime function initially-->
+<!--    checkRefreshTime();-->
+
+<!--    // Set an interval to call the checkRefreshTime function every 5 minutes (300,000 milliseconds)-->
+<!--    setInterval(checkRefreshTime, 300000);-->
+  </script>
+
+  <h1 class="mt-5">Option Chain Data</h1>
+  <p>Next Week Expiry: {{ next_week_expiry }}</p>
+    Nifty LTP: <h1> <span>{{ bnf_value }} </span></h1>
+  <h2 class="mt-4">Cumulative Call = {{ call_change_in_oi_sum }}</h2>
+  <h2>Cumulative Puts = {{ put_change_in_oi_sum }}</h2>
+
+  <h2 class="mt-4">PE Ratio = {{ PE_Ratio }}</h2> <span> <h1>{{ recommendation }}</h1>  </span>
+
+<div class="table-responsive mt-4">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Change in Open Interest (CE)</th>
+                <th>Open Interest (CE)</th>
+                <th>Strike Price</th>
+<!--                <th>Strike Price (PE)</th>-->
+                <th>Open Interest (PE)</th>
+                <th>Change in Open Interest (PE)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ce_data in ce_option_chain_data %}
+                {% for pe_data in pe_option_chain_data %}
+                    {% if ce_data.strikePrice == pe_data.strikePrice %}
+                        <tr>
+                            <td>{{ ce_data.changeInOpenInterest }}</td>
+                            <td>{{ ce_data.openInterest }}</td>
+                            <td>{{ ce_data.strikePrice }}</td>
+<!--                            <td>{{ pe_data.strikePrice }}</td>-->
+                            <td>{{ pe_data.openInterest }}</td>
+                            <td>{{ pe_data.changeInOpenInterest }}</td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+  {{ save_pe_value }}
+</div>
+{% endblock content %}
