@@ -2,69 +2,149 @@
 {% block title %}Option Chain Homepage{% endblock title %}
 
 {% block content %}
+
 <div class="container">
-  <script>
-<!--    function refreshPage() {-->
-<!--      location.reload();-->
-<!--    }-->
 
-<!--    var currentTime = new Date();-->
-<!--    var startHour = 9;-->
-<!--    var endHour = 16;-->
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="mt-5">Change in Open Interest</h2>
+      <img src="{{ image_url_change_in_oi }}" alt="Change in Open Interest Plot" class="img-fluid">
+    </div>
+    <div class="col-md-6">
+      <h2 class="mt-5">Open Interest</h2>
+      <img src="{{ image_url_open_interest }}" alt="Open Interest Plot" class="img-fluid">
+    </div>
+  </div>
 
-<!--    function checkRefreshTime() {-->
-<!--      currentTime = new Date();-->
-<!--      if (currentTime.getHours() >= startHour && currentTime.getHours() < endHour) {-->
-<!--        refreshPage();-->
-<!--      }-->
-<!--    }-->
+  <div class="row">
 
-<!--    // Call the checkRefreshTime function initially-->
-<!--    checkRefreshTime();-->
+  <div class="col-md-4">
+    <div class="card mt-4">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">Cumulative Puts</h6>
+        <h6 class="card-text">{{ put_change_in_oi_sum }}</h6>
+      </div>
+    </div>
+  </div>
 
-<!--    // Set an interval to call the checkRefreshTime function every 5 minutes (300,000 milliseconds)-->
-<!--    setInterval(checkRefreshTime, 300000);-->
-  </script>
+  <div class="col-md-4">
+    <div class="card mt-4">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">PE Ratio</h6>
+        <h3 class="card-title">{{ PE_Ratio }}</h3>
+      </div>
+    </div>
+  </div>
 
-  <h1 class="mt-5">Option Chain Data</h1>
-  <p>Next Week Expiry: {{ next_week_expiry }}</p>
-    Bank Nifty LTP: <h1> <span>{{ bnf_value }} </span></h1>
-  <h2 class="mt-4">Cumulative Call = {{ call_change_in_oi_sum }}</h2>
-  <h2>Cumulative Puts = {{ put_change_in_oi_sum }}</h2>
+  <div class="col-md-4">
+    <div class="card mt-4">
+      <div class="card-body">
+        <h3 class="card-title">{{ recommendation }}</h3>
+      </div>
+    </div>
+  </div>
 
-  <h2 class="mt-4">PE Ratio = {{ PE_Ratio }}</h2> <span> <h1>{{ recommendation }}</h1>  </span>
-
-<div class="table-responsive mt-4">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Change in Open Interest (CE)</th>
-                <th>Open Interest (CE)</th>
-                <th>Strike Price</th>
-<!--                <th>Strike Price (PE)</th>-->
-                <th>Open Interest (PE)</th>
-                <th>Change in Open Interest (PE)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ce_data in ce_option_chain_data %}
-                {% for pe_data in pe_option_chain_data %}
-                    {% if ce_data.strikePrice == pe_data.strikePrice %}
-                        <tr>
-                            <td>{{ ce_data.changeInOpenInterest }}</td>
-                            <td>{{ ce_data.openInterest }}</td>
-                            <td>{{ ce_data.strikePrice }}</td>
-<!--                            <td>{{ pe_data.strikePrice }}</td>-->
-                            <td>{{ pe_data.openInterest }}</td>
-                            <td>{{ pe_data.changeInOpenInterest }}</td>
-                        </tr>
-                    {% endif %}
-                {% endfor %}
-            {% endfor %}
-        </tbody>
-    </table>
 </div>
 
-  {{ save_pe_value }}
+
+<div class="row">
+
+  <div class="col-md-4">
+    <div class="card mt-5">
+      <div class="card-body">
+        <h5 class="card-title">Option Chain Data</h5>
+        <p class="card-text">Next Week Expiry: {{ next_week_expiry }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card mt-5">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">Bank Nifty LTP</h6>
+        <h3 class="card-title">{{ bnf_value }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card mt-5">
+      <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">Cumulative Call</h6>
+        <h6 class="card-text">{{ call_change_in_oi_sum }}</h6>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+
+  <div class="row">
+    <div class="col-md-6">
+      <h2 class="mt-5">Change in Open Interest</h2>
+      <img src="{{ image_url_change_in_oi }}" alt="Change in Open Interest Plot" class="img-fluid">
+    </div>
+    <div class="col-md-6">
+      <h2 class="mt-5">Open Interest</h2>
+      <img src="{{ image_url_open_interest }}" alt="Open Interest Plot" class="img-fluid">
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <h2 class="mt-5">PE Ratio Trend</h2>
+      <img src="{{ image_url_pe_ratio }}" alt="PE Ratio Trend Plot" class="img-fluid">
+    </div>
+  </div>
+
+  <h2 class="mt-5">PE Ratio Data</h2>
+  <canvas id="pe-ratio-chart" width="200" height="100"></canvas>
+
+  <script>
+    const peRatioData = JSON.parse('{{ pe_ratio_data | safe }}');
+
+    // Prepare data for line chart
+    const labels = peRatioData.map(data => data.date);
+    const values = peRatioData.map(data => data.value);
+    const referenceLine = Array(values.length).fill(1);
+
+    // Create line chart
+    const ctx = document.getElementById('pe-ratio-chart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'PE Ratio',
+            data: values,
+            backgroundColor: 'rgba(0, 123, 255, 0.5)',
+            borderColor: 'rgba(0, 123, 255, 1)',
+            borderWidth: 2,
+            pointRadius: 0,
+          },
+          {
+            label: 'Reference Line',
+            data: referenceLine,
+            borderColor: 'rgba(255, 0, 0, 0.5)',
+            borderWidth: 1,
+            borderDash: [5, 5],
+            pointRadius: 0,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            suggestedMin: 0,
+          },
+        },
+      },
+    });
+  </script>
 </div>
 {% endblock content %}

@@ -74,6 +74,8 @@ def option_chain_view(request, pk):
 
             # Calculate the date for next week expiry
             next_week_expiry = current_date + timedelta(days=(7 - current_date.weekday() + 3))
+            next_week_expiry_str = '2023-06-29'
+            next_week_expiry_date = datetime.strptime(next_week_expiry_str, '%Y-%m-%d').date()
 
             # Variables to store the sum of change in open interest
             call_change_in_oi_sum = 0
@@ -84,7 +86,7 @@ def option_chain_view(request, pk):
                 expiry_date = datetime.strptime(data["expiryDate"], "%d-%b-%Y").date()
 
                 # Check if the expiry date is the next week expiry
-                if expiry_date == next_week_expiry:
+                if expiry_date == next_week_expiry_date:
                     if "CE" in data:
                         strike_price = data["strikePrice"]
                         if strike_price % 50 == 0 and strike_price >= quote_value - 500 and strike_price <= quote_value + 500:
@@ -132,7 +134,7 @@ def option_chain_view(request, pk):
             context = {
                 "ce_option_chain_data": ce_data,
                 "pe_option_chain_data": pe_data,
-                "next_week_expiry": next_week_expiry.strftime("%d-%b-%Y"),
+                "next_week_expiry": next_week_expiry_date,
                 "call_change_in_oi_sum": call_change_in_oi_sum,
                 "put_change_in_oi_sum": put_change_in_oi_sum,
                 "PE_Ratio": put_call_ratio,
