@@ -25,4 +25,6 @@ urlpatterns = [
     path('', include('home.urls')),
     path('option_chain/', include('optionchainapp.urls')),
     path('nifty_option_chain/', include('optionchainnifty.urls')),
+    path('finnifty/', include('optionchainappfinnifty.urls')),
+    path('index_tick_chart', include('indexcandlestickchart.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

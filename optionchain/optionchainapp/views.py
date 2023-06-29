@@ -10,24 +10,14 @@ from home.fyersapi import FyerApiClass
 
 from .models import Save_PE_Ratio
 
-from datetime import datetime, timedelta
-
-from datetime import datetime, timedelta
-
-def app_detail_model(pk):
-    app_model = get_object_or_404(Fyers_Auth_Inputs, user_ass_id=pk)
-    client_id = app_model.client_id
-    return client_id
 
 
-def access_token(pk):
-    access_token_model = get_object_or_404(Fyers_Access_Token, app_ass_id=pk)
-    access_token = access_token_model.auth_code
-    return access_token
+import datetime
 
-from django.shortcuts import render
-from datetime import datetime, timedelta
-import requests
+from django.utils import timezone
+from datetime import datetime, time
+
+from datetime import *
 
 from django.shortcuts import render
 from datetime import datetime, timedelta
@@ -41,6 +31,17 @@ import io
 import base64
 import urllib.parse
 
+
+def app_detail_model(pk):
+    app_model = get_object_or_404(Fyers_Auth_Inputs, user_ass_id=pk)
+    client_id = app_model.client_id
+    return client_id
+
+
+def access_token(pk):
+    access_token_model = get_object_or_404(Fyers_Access_Token, app_ass_id=pk)
+    access_token = access_token_model.auth_code
+    return access_token
 
 def option_chain_view(request, pk):
     client_id = app_detail_model(pk)
@@ -83,12 +84,15 @@ def option_chain_view(request, pk):
 
             # Calculate the date for next week expiry
             next_week_expiry = current_date + timedelta(days=(7 - current_date.weekday() + 3))
-            next_week_expiry_str = '2023-06-29'
+            next_week_expiry_str = '2023-07-06'
             next_week_expiry_date = datetime.strptime(next_week_expiry_str, '%Y-%m-%d').date()
 
             # Variables to store the sum of change in open interest
             call_change_in_oi_sum = 0
             put_change_in_oi_sum = 0
+
+            call_oi_sum = 0
+            put_oi_sum = 0
 
             # Iterate over the option chain data
             for data in option_chain_data:
@@ -109,6 +113,7 @@ def option_chain_view(request, pk):
                                 "changeInOpenInterest": change_in_open_interest
                             })
                             call_change_in_oi_sum += change_in_open_interest
+                            call_oi_sum += open_interest
                     if "PE" in data:
                         strike_price = data["strikePrice"]
                         if strike_price % 100 == 0 and strike_price >= quote_value - 1000 and strike_price <= quote_value + 1000:
@@ -122,6 +127,7 @@ def option_chain_view(request, pk):
                                 "changeInOpenInterest": change_in_open_interest
                             })
                             put_change_in_oi_sum += change_in_open_interest
+                            put_oi_sum += open_interest
 
             # Sort the extracted data by strike price
             ce_data.sort(key=lambda x: x["strikePrice"])
@@ -129,17 +135,19 @@ def option_chain_view(request, pk):
 
             put_call_ratio = round(float(put_change_in_oi_sum) / float(call_change_in_oi_sum), 2)
 
-            if put_call_ratio > 1.25:
+            overall_market_settiment = round(float(put_oi_sum) / float(call_oi_sum), 2)
+
+            if put_call_ratio > 1.25 and overall_market_settiment > 1.0:
                 recommendation = "BUY"
-            elif put_call_ratio < 0.75:
+            elif put_call_ratio < 0.75 and overall_market_settiment < 1.0:
                 recommendation = "SELL"
             else:
                 recommendation = "Market Sideways"
 
+
             save_pe_value = Save_PE_Ratio(value=put_call_ratio)
             save_pe_value.save()
 
-            # Retrieve the existing Save_PE_Ratio objects
 
 
             # Create the context dictionary
@@ -153,6 +161,7 @@ def option_chain_view(request, pk):
                 "save_pe_value": save_pe_value,
                 "bnf_value": quote_value,
                 "recommendation": recommendation,
+                "settiment": overall_market_settiment
             }
 
             # Generate the plot for Change in Open Interest and save it as an image
@@ -219,20 +228,20 @@ def option_chain_view(request, pk):
             # Pass the Open Interest image URL to the template context
             context['image_url_open_interest'] = image_url_open_interest
 
-            save_pe_values = Save_PE_Ratio.objects.all().order_by('-id')[:30]  # Retrieve the last 20 objects
+            save_pe_values = Save_PE_Ratio.objects.all().order_by('-id')[:20]  # Retrieve the last 20 objects
 
             # Extract the PE Ratio values and reverse the order
             pe_ratios = [save_pe_value.value for save_pe_value in save_pe_values][::-1]
 
-            # Generate the plot for PE Ratio and save it as an image
             buffer_pe_ratio = io.BytesIO()
 
             plt.figure(figsize=(10, 6))
             plt.plot(pe_ratios, 'b-', label='PE Ratio')
-            plt.axhline(y=1, color='r', linestyle='--', label='Reference Line')
+            plt.axhline(y=1.0, color='red', linewidth=2, label='Reference Line')
             plt.xlabel('Data Point')
             plt.ylabel('PE Ratio')
             plt.title('PE Ratio Trend')
+            plt.ylim(-10, 10)  # Set the y-axis limits to -50 and +50
             plt.legend()
             plt.tight_layout()
 

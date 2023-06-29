@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'home',
     'optionchainapp',
     'optionchainnifty',
+    'optionchainappfinnifty',
+    'indexcandlestickchart',
 ]
 
 MIDDLEWARE = [
